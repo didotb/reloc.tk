@@ -1,0 +1,41 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block head %}
+	<meta name="robots" content="noindex" />
+{{ super() }}
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+	.error { color: red; }
+	.success { color: green; }
+	body { background: #efefef; margin: 5%; }
+</style>
+{% endblock %}
+
+{% block title %}
+	Add | URL Shortener
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+				<h1>Add URL Records</h1>
+				{{ wtf.quick_form(form) }}
+				<br />
+				<strong class={{ err }}> {{ msg }} <a href="https://www.{{ url }}" target="_blank">{{ url }}</a> </strong>
+				{% for iter in formmsg %}
+				<strong class="error">{{ iter }}</strong>
+				{% endfor %}
+				<br />
+				<br />
+				<br />
+				<a href="/logout/" target="_self" style="text-align: center; font-size: 200%;">logout</a>
+				<a href="/?signal={{ stop }}" target="_self" style="color: red; font-size: 200%; text-align: right; position: absolute; right: 0;" >stop app</a>
+			</div>
+		</div>
+	</div>
+{% endblock %}

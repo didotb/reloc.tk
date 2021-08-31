@@ -1,0 +1,54 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block head %}
+	<meta name="robots" content="noindex" />
+{{ super() }}
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+	body { background: #efefef; margin: 5%; }
+	h4 { color: #545b62; }
+	.sub_height { line-height: 2%; }
+	.height { line-height: 300%; }
+	.error { color: red; }
+	.success { color: green; }
+	.comment { color: gray; font-size: small; }
+</style>
+{% endblock %}
+
+{% block title %}
+	Contact Me | URL Shortener
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+				<h1>Contact Me</h1>
+				<div style="font-size: small; margin-top: 4%;">
+					<li>Fields marked with (<span style="color: red;">*</span>) are important.</li>
+					<li>Please upload your PGP Public Key to a keyserver if you want me to reply to you.</li>
+					<li>This page is used for automatically encoding messages. No need to encrypt your message beforehand.</li>
+				</div>
+				<div style="margin-top: 8%;">
+					<form action method="post" class="form" role="role">
+						<strong>{{ form.reply_email.label( class_="form-control-label" ) }}</strong> <span style="color:red;">*</span>
+						{{ form.reply_email( class_="form-control" ) }}
+						<br />
+						<strong>{{ form.pgp.label( class_="form-control-label" ) }}</strong> <span class="comment">(Optional)</span>
+						{{ form.pgp( class_="form-control" ) }}
+						<br />
+						<strong>{{ form.message.label( class_="form-control-label" ) }}</strong> <span style="color:red;">*</span>
+						{{ form.message( class_="form-control", rows="10" ) }}
+						<br />
+						{{ form.submit( class_="btn btn-primary", style="position: relative; float:left;" ) }}
+						<a class="btn btn-secondary" style="position: relative; float: right; color: white; text-decoration: none;" href="/" id="home" name="home" type="button">Go Back</a>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
