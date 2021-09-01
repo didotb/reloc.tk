@@ -49,7 +49,7 @@ class redir_url(FF):
 class contact_me(FF):
 	reply_email = StringField( "Your Email:", validators=[Email(granular_message=True), InputRequired(message="\'Email\' field is required.")] )
 	pgp = StringField( "Public Key URL:", validators=[URL(message="Invalid URL."), Optional()] )
-	message = TextAreaField( "Message:" )
+	message = TextAreaField( "Message:", validators=[InputRequired(message="\'Message\' field is required.")] )
 	submit = SubmitField( "Submit" )
 
 # local environment configurations
