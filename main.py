@@ -123,17 +123,21 @@ def urls():
 			elif check_key( ckey = rand_key ) is False:
 				msg = "Key " + rand_key + " exists. Try again"
 				errtype = "error"
+			form.full_url.data = ''
+			form.custom_key.data = ''
 		else:
 			formmsg = form.full_url.errors + form.custom_key.errors
 		return render_template( 'urls.html', msg=msg, url=url_tmpl, form=form, formmsg=formmsg, err=errtype, stop=app.config['KILL_SIGNAL'] )
 	return redirect( location = app.config[ 'SIMPLELOGIN_LOGIN_URL' ] )
 
+# personal pgp public key
 @app.route( '/pgp/' )
 def my_pgp():
 	with open('pgp.txt', 'r') as f:
 		pgp = f.read()
 	return render_template("pgp.html", pgp=pgp)
 
+# contact me form
 @app.route( '/contact/', methods=['POST', 'GET'] )
 def contact():
 	form = contact_me()
@@ -160,5 +164,6 @@ def contact():
 		return redirect(url_for('contact'))
 	return render_template('contact.html', form=form)
 
+# run app
 if __name__ == "__main__":
 	app.run( host = '0.0.0.0', port = 80 )
