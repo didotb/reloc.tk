@@ -5,7 +5,7 @@ from flask_bootstrap import Bootstrap
 from wtforms import StringField, SubmitField, TextAreaField
 from wtforms.validators import URL, Optional, Length, InputRequired, Email
 from flask_compress import Compress
-from db_control import db_keys
+from mongodb import insert, query
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import string, random, os, hashlib as h, signal, smtplib, ssl, gnupg
@@ -27,17 +27,16 @@ def check_user( user ):
 
 # redirect key checker
 def check_key( ckey:str, print:bool = False ):
-	query = db_keys.get_or_none( db_keys.key == ckey )
+	result = query(ckey)
 	if print is False:
-		return True if query is None else False
+		return True if result is None else False
 	else:
-		return query.url if query is not None else None
+		return result['url'] if result is not None else None
 
 # insert key to database
 def send_key( key:str, url:str ):
-	insert = db_keys( key = key, url = url )
-	result = insert.save()
-	return key if result >= 1 else None
+	result = insert(url, key)
+	return key if result is True else None
 
 # form content
 class redir_url(FF):
