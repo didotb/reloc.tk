@@ -4,7 +4,7 @@ This [URL Shortener](https://reloc.tk) was made in order to make my life easier 
 Database resets randomly multiple times a week.
 
 ### Ran using Python 3.x with:
-+ Peewee (SQLCipher)
++ PyMongo
 + Flask
   + SimpleLogin
   + Templates
