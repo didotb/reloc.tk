@@ -5,10 +5,11 @@ from flask_bootstrap import Bootstrap
 from wtforms import StringField, SubmitField, TextAreaField
 from wtforms.validators import URL, Optional, Length, InputRequired, Email
 from flask_compress import Compress
-from mongodb import insert, query
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import string, random, os, hashlib as h, signal, smtplib, ssl, gnupg
+from mongodb import insert, query
+from crypt import r
+import os, hashlib as h, signal, smtplib, ssl, gnupg
 
 # initiate flask app
 app = Flask( __name__ )
@@ -17,21 +18,14 @@ app = Flask( __name__ )
 gpg = gnupg.GPG(gnupghome=os.environ['gnupg_home-dir'])
 gpg.encoding = 'utf-8'
 
-# random string generator
-def r( size:int = 512, charset:str = string.ascii_lowercase + string.digits + string.ascii_uppercase + '-_+' ):
-	return ''.join( random.SystemRandom().choice( charset ) for _ in range( size ) )
-
 # user checker for SimpleLogin
 def check_user( user ):
 	return True if ( h.sha512( os.environ['s1'].encode() + user.get('username').encode() + os.environ['s2'].encode() ).hexdigest() == os.environ['flask_user'] ) and ( h.sha512( os.environ['sp1'].encode() + os.environ['sp2'].encode() + user.get('password').encode() + os.environ['sp2'].encode() ).hexdigest() == os.environ['flask_passwd'] ) else False
 
 # redirect key checker
-def check_key( ckey:str, print:bool = False ):
-	result = query(ckey)
-	if print is False:
-		return True if result is None else False
-	else:
-		return result['url'] if result is not None else None
+def check_key( ckey:str ):
+	result = query(key=ckey)
+	return result['url'] if result is not None else None
 
 # insert key to database
 def send_key( key:str, url:str ):
@@ -71,7 +65,8 @@ app.config[ 'COMPRESS_BR_MODE' ] = 1
 ##
 @app.route( '/<url>/' )
 def redr( url ):
-	return redirect( location = check_key( url, True ), code = 301 ) if check_key( url ) is False else abort( 404, description = 'Redirect does not exist.' )
+	result = check_key( url )
+	return redirect( location = result ) if result else abort( 404, description = 'Redirect does not exist.' )
 
 ##
 ## Initialize modules after main redirector ##
