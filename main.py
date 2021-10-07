@@ -7,9 +7,9 @@ from wtforms.validators import URL, Optional, Length, InputRequired, Email
 from flask_compress import Compress
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from mongodb import insert, query
-from crypt import r
-import os, hashlib as h, signal, smtplib, ssl, gnupg
+from mongodb import insert, query, checkUser
+from crypt import r, crh
+import os, signal, smtplib, ssl, gnupg
 
 # initiate flask app
 app = Flask( __name__ )
@@ -20,7 +20,13 @@ gpg.encoding = 'utf-8'
 
 # user checker for SimpleLogin
 def check_user( user ):
-	return True if ( h.sha512( os.environ['s1'].encode() + user.get('username').encode() + os.environ['s2'].encode() ).hexdigest() == os.environ['flask_user'] ) and ( h.sha512( os.environ['sp1'].encode() + os.environ['sp2'].encode() + user.get('password').encode() + os.environ['sp2'].encode() ).hexdigest() == os.environ['flask_passwd'] ) else False
+	usr = user.get('username')
+	pswd = user.get('password')
+	try:
+		hash = checkUser(usr)['password']
+	except TypeError:
+		return False
+	return True if crh(pswd, usr) == hash else False
 
 # redirect key checker
 def check_key( ckey:str ):
@@ -69,7 +75,7 @@ def redr( url ):
 	return redirect( location = result ) if result else abort( 404, description = 'Redirect does not exist.' )
 
 ##
-## Initialize modules after main redirector ##
+## Init modules the main redir doesn't need ##
 ##
 # SimpleLogin
 sl( app = app, login_checker = check_user )

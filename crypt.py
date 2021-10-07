@@ -1,6 +1,6 @@
 from Crypto.Cipher import ChaCha20 as cc
 from base64 import b64encode as b64
-import string, random
+import string, random, hashlib as h
 
 # url safe random string generator
 def r( size:int = 512, charset:str = string.ascii_lowercase + string.digits + string.ascii_uppercase + '-_+' ):
@@ -13,7 +13,10 @@ def enc(content:str, key:str):
 	ct = b64(ciphertext).decode('utf-8')
 	return {'nonce': nonce, 'content': ct}
 
-def denc(content:str, nonce:str, key:str):
+def dec(content:str, nonce:str, key:str):
 	cipher = cc.new(key=key, nonce=nonce)
 	result = cipher.decrypt(content)
 	return result
+
+def crh(content:str, salt:str):
+	return h.sha512(content.encode() + salt.encode()).hexdigest()
