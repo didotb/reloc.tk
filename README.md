@@ -12,6 +12,7 @@ Database resets randomly multiple times a week.
   + Compress
 + GnuPG
 + WTForms
++ PyCryptodome
 
 ## Future plans:
 I might consider opening this up in public with signups if I get the resources. But for now, since this is being hosted in [Replit](https://replit.com/@ddotb/reloctk) for free, resource is limited.
