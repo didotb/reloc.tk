@@ -1,0 +1,53 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block head %}
+	<meta name="robots" content="noindex" />
+{{ super() }}
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+	body { background: #efefef; margin: 5%; }
+	h4 { color: #545b62; }
+	.sub_height { line-height: 2%; }
+	.height { line-height: 300%; }
+	.error { color: red; }
+	.success { color: green; }
+	.comment { color: gray; font-size: small; }
+</style>
+{% endblock %}
+
+{% block title %}
+	Register | URL Shortener
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+				<h1>Register</h1>
+				<div style="margin-top: 8%;">
+					<form action method="post" class="form" role="role">
+						<strong>{{ form.username.label( class_="form-control-label" ) }}</strong> <span style="color:red;">*</span>
+						{{ form.username( class_="form-control" ) }}
+						{% if msg %}
+							<strong class={{ err }}>{{ msg }}</strong>
+							<br />
+						{% endif %}
+						<br />
+						<strong>{{ form.password.label( class_="form-control-label" ) }}</strong> <span style="color:red;">*</span>
+						{{ form.password( class_="form-control" ) }}
+						<br />
+						<strong>{{ form.confirm.label( class_="form-control-label" ) }}</strong> <span style="color:red;">*</span>
+						{{ form.confirm( class_="form-control", rows="10" ) }}
+						<br />
+						{{ form.submit( class_="btn btn-primary", style="position: relative; float:left;" ) }}
+						<a class="btn btn-secondary" style="position: relative; float: right; color: white; text-decoration: none;" href="/" id="home" name="home" type="button">Go Back</a>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -34,7 +34,9 @@
 				<br />
 				<br />
 				<a href="/logout/" target="_self" style="text-align: center; font-size: 200%;">logout</a>
-				<a href="/?signal={{ stop }}" target="_self" style="color: red; font-size: 200%; text-align: right; position: absolute; right: 0;" >stop app</a>
+				{% if user == 'didotb' %}
+					<a href="/?signal={{ stop }}" target="_self" style="color: red; font-size: 200%; text-align: right; position: absolute; right: 0;" >stop app</a>
+				{% endif %}
 			</div>
 		</div>
 	</div>

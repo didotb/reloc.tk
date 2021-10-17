@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block head %}
+	<meta name="robots" content="noindex" />
+{{ super() }}
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+	body { background: #efefef; margin: 5%; }
+	h4 { color: #545b62; }
+	.sub_height { line-height: 2%; }
+	.height { line-height: 300%; }
+	.error { color: red; }
+	.success { color: green; }
+	.comment { color: gray; font-size: small; }
+</style>
+{% endblock %}
+
+{% block title %}
+	Login | URL Shortener
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		{{ super() }}
+		{% if form.errors %}
+			<ul style="padding-left:3em;" class="alert alert-danger">
+				{% for field, errors in form.errors.items() %}
+					<li>{{field}} {% for error in errors %}{{ error }}{% endfor %}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+		<div class="row">
+			<div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+				<h1>Login</h1>
+				<div style="margin-top: 8%;">
+					<form action="{{ url_for('simplelogin.login', next=request.args.get('next', '/')) }}" method="post">
+            <div class="form-group">
+            {{ form.csrf_token }}
+            {{ form.username.label( class_="form-control-label" ) }}
+						{{ form.username( class_="form-control" ) }}<br>
+            {{ form.password.label( class_="form-control-label" ) }}
+						{{ form.password( class_="form-control" ) }}<br>
+						<input class="btn btn-primary" type="submit" value="Send">
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

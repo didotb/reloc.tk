@@ -10,9 +10,9 @@
 {{ super() }}
 <style>
 	body { background: #efefef; margin: 5%; }
-	h4 { color: #545b62; }
+	.subtitle { color: #545b62; }
 	.sub_height { line-height: 2%; }
-	.height { line-height: 800%; }
+	.height { margin: 8% 0 8% 0; }
 	.notes { padding-top: 7%; }
 </style>
 {% endblock %}
@@ -27,20 +27,30 @@
 			<div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
 				<h1>Private owned URL Shortener</h1>
 				<span class="sub_height">
-					<h4>
+					<h5 class="subtitle">
 						Using MongoDB, Flask, and SimpleLogin
-					</h4>
+					</h5>
 					<h6>
 						By: <a href="/pgp/" target="_blank">Andrew Barrientos</a> <span style="color:red;"> *</span>
 						<br />
 						<a href="/contact/" style="color:green;">Contact me</a><span style="color:red;"> **</span>
 					</h6>
 				</span>
-				<a href="/urls/" target="_self" class="height">control panel</a>
-				<div class="notes">
-					<span style="color:red;">*</span> - All non-encrypted emails will be automatically deleted
+				<div class="height">
+					<a href="/urls/" target="_self">control panel</a>
 					<br />
-					<span style="color:red;">**</span> - I may not be able to reply.</span>
+					<a href="/register/">register</a><span style="color:red;"> ***</span>
+				</div>
+				<div class="notes">
+					<strong class="subtitle">NOTES:</strong>
+					<br />
+					<div style="padding-left:1em;">
+						<span style="color:red;">*</span> - All non-encrypted emails will be automatically deleted
+						<br />
+						<span style="color:red;">**</span> - I may not be able to reply.</span>
+						<br />
+						<span style="color:red;">***</span> Heavily monitored for debugging.</span>
+					</div>
 				</div>
 			</div>
 		</div>

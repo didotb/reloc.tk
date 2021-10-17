@@ -21,7 +21,7 @@ def insert(usr:str, url:str, key:str):
 def query(key:str):
 	# return dict if exists, else None
 	content = keys.find_one({"key": key})
-	return content
+	return content if content else None
 
 ##
 ## USERS ##
@@ -40,4 +40,21 @@ def regUser(usr:str, pswd:str):
 def checkUser(usr:str):
 	# return dict
 	content = usrs.find_one({"user": usr})
+	return content
+
+##
+## DEOBFUSCATION KEYS ##
+##
+symkey = db.symkey
+
+def saveKey(urlKey:str, cipherKey:str, nonce:str):
+	content = {
+		"key": urlKey,
+		"symkey": cipherKey,
+		"nonce": nonce
+	}
+	return True if symkey.insert_one(content).inserted_id is not None else False
+
+def getKey(urlKey:str):
+	content = symkey.find_one({"key": urlKey})
 	return content

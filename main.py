@@ -1,14 +1,15 @@
 from flask import Flask, redirect, request, abort, render_template, url_for
-from flask_simplelogin import SimpleLogin as sl, login_required, is_logged_in
+from flask_simplelogin import SimpleLogin, login_required, is_logged_in
 from flask_wtf import FlaskForm as FF
 from flask_bootstrap import Bootstrap
-from wtforms import StringField, SubmitField, TextAreaField
-from wtforms.validators import URL, Optional, Length, InputRequired, Email
+from wtforms import StringField, SubmitField, TextAreaField, PasswordField
+from wtforms.validators import URL, Optional, Length, InputRequired, Email, EqualTo
 from flask_compress import Compress
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from mongodb import insert, query, checkUser
-from crypt import r, crh
+from mongodb import insert, query, checkUser, saveKey, getKey, regUser
+from crypt import r, crh, enc, dec
+from urllib.parse import quote
 import os, signal, smtplib, ssl, gnupg
 
 # initiate flask app
@@ -20,25 +21,27 @@ gpg.encoding = 'utf-8'
 
 # user checker for SimpleLogin
 def check_user( user ):
-	usr = user.get('username')
+	global globalUser
+	globalUser = user.get('username')
 	pswd = user.get('password')
 	try:
-		hash = checkUser(usr)['password']
+		hash = checkUser(globalUser)['password']
 	except TypeError:
 		return False
-	return True if crh(pswd, usr) == hash else False
+	return True if crh(pswd, globalUser) == hash else False
 
 # redirect key checker
 def check_key( ckey:str ):
 	result = query(key=ckey)
-	return result['url'] if result is not None else None
+	deob = getKey(ckey) if result is not None else None
+	return dec(result['url'], deob['nonce'], deob['symkey']) if result is not None else False
 
 # insert key to database
-def send_key( key:str, url:str ):
-	result = insert(url, key)
+def send_key( key:str, url:str, usr:str ):
+	result = insert(usr, url, key)
 	return key if result is True else None
 
-# form content
+# redirect form
 class redir_url(FF):
 	full_url = StringField( "Full URL (include http(s)) *: ", validators = [ URL(), InputRequired( message = "\'Full URL\' field is important." ) ] )
 	custom_key = StringField( "Custom key (optional): ", validators = [ Optional(), Length( min=6, max=20 ) ] )
@@ -50,6 +53,18 @@ class contact_me(FF):
 	pgp = StringField( "Public Key URL:", validators=[URL(message="Invalid URL."), Optional()] )
 	message = TextAreaField( "Message:", validators=[InputRequired(message="\'Message\' field is required.")] )
 	submit = SubmitField( "Submit" )
+
+# register form
+class reg(FF):
+	username = StringField("Username:", validators=[InputRequired()])
+	password = PasswordField("Password:", validators=[InputRequired(), EqualTo("confirm")])
+	confirm = PasswordField("Confirm Password:", validators=[InputRequired()])
+	submit = SubmitField("Submit")
+
+class login(FF):
+	username = StringField("Username", validators=[InputRequired()])
+	password = PasswordField("Password", validators=[InputRequired()])
+	submit = SubmitField("Submit")
 
 # local environment configurations
 app.config[ 'SECRET_KEY' ] = r(4096)
@@ -69,16 +84,26 @@ app.config[ 'COMPRESS_BR_MODE' ] = 1
 ##
 ## MAIN REDIRECTOR ##
 ##
-@app.route( '/<url>/' )
-def redr( url ):
-	result = check_key( url )
+@app.route( '/<key>/' )
+def redr( key ):
+	result = check_key( key )
 	return redirect( location = result ) if result else abort( 404, description = 'Redirect does not exist.' )
 
 ##
 ## Init modules the main redir doesn't need ##
 ##
+# SimpleLogin messages
+messages = {
+	'login_success': 'login success!',
+	'login_failure': 'invalid credentials',
+	'is_logged_in': 'already logged in',
+	'logout': 'logged out!',
+	'login_required': 'You need to log in first',
+	'access_denied': 'Access Denied',
+	'auth_error': 'Authentication Error: {0}'
+}
 # SimpleLogin
-sl( app = app, login_checker = check_user )
+SimpleLogin( app = app, login_checker = check_user, login_form=login, messages=messages )
 # flask compression
 Compress().init_app(app)
 # bootstrap
@@ -100,35 +125,56 @@ def home():
 
 # redirect url maker homepage
 @app.route( app.config[ 'SIMPLELOGIN_HOME_URL' ], methods=['GET','POST'] )
-@login_required( username = 'didotb' )
+@login_required
 def urls():
-	if is_logged_in( username = 'didotb' ):
+	if is_logged_in():
 		form = redir_url()
 		msg = ""
 		errtype = ""
 		formmsg = ""
 		url_tmpl = ""
 		if form.validate_on_submit():
-			full_url = form.full_url.data
 			rand_key = form.custom_key.data if len( form.custom_key.data ) > 1 else r(6)
-			if check_key( ckey = rand_key ):
-				result = send_key( key = rand_key, url = full_url )
-				if result is not None:
-					msg = "Record added. "
-					errtype = "success"
-					url_tmpl = "reloc.tk/"+result+"/"
+			full_url = form.full_url.data
+			if check_key( rand_key ) is False:
+				encUrl = enc(content=full_url)
+				if saveKey(rand_key,encUrl['symkey'],encUrl['nonce']):
+					result = send_key( key = rand_key, url = encUrl['content'], usr = globalUser )
+					if result is not None:
+						msg = "Record added. "
+						errtype = "success"
+						url_tmpl = "reloc.tk/"+result+"/"
+					else:
+						msg = "Error adding record"
+						errtype = "error"
 				else:
-					msg = "Error adding record"
+					msg = "Error obfuscating URL: Please contact Andrew."
 					errtype = "error"
-			elif check_key( ckey = rand_key ) is False:
+			elif check_key( rand_key ):
 				msg = "Key " + rand_key + " exists. Try again"
 				errtype = "error"
 			form.full_url.data = ''
 			form.custom_key.data = ''
 		else:
 			formmsg = form.full_url.errors + form.custom_key.errors
-		return render_template( 'urls.html', msg=msg, url=url_tmpl, form=form, formmsg=formmsg, err=errtype, stop=app.config['KILL_SIGNAL'] )
+		return render_template( 'urls.html', msg=msg, url=url_tmpl, form=form, user=globalUser, formmsg=formmsg, err=errtype, stop=app.config['KILL_SIGNAL'] )
 	return redirect( location = app.config[ 'SIMPLELOGIN_LOGIN_URL' ] )
+
+# user register
+@app.route( '/register/', methods=['POST', 'GET'] )
+def register():
+	form = reg()
+	if request.method == 'POST':
+		usr = quote(form.username.data, safe='')
+		pswd = quote(form.password.data, safe='')
+		cnfrm = quote(form.confirm.data, safe='')
+		if checkUser(usr) is not None:
+			return render_template("register.html", form=form, msg="User already exists.", err="error")
+		if pswd == cnfrm:
+			hash = crh(pswd,usr)
+			if regUser(usr,hash):
+				return redirect(location=app.config[ 'SIMPLELOGIN_LOGIN_URL' ])
+	return render_template("register.html", form=form)
 
 # personal pgp public key
 @app.route( '/pgp/' )

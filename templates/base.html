@@ -1,0 +1,21 @@
+{% extends 'bootstrap/base.html' %} 
+{% import "bootstrap/wtf.html" as wtf %}
+
+<html>
+ <body>
+    <hr>
+    <div class='container'>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class=flashes>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+     </div>
+      {% block content %}{% endblock %}
+      </div>
+  </body>
+</html>
