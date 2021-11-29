@@ -26,7 +26,7 @@
 				<h1>Add URL Records</h1>
 				{{ wtf.quick_form(form) }}
 				<br />
-				<strong class={{ err }}> {{ msg }} <a href="https://www.{{ url }}" target="_blank">{{ url }}</a> </strong>
+				<strong class={{ err }}> {{ msg }} <a href="https://{{ url }}" target="_blank">{{ url }}</a> </strong>
 				{% for iter in formmsg %}
 				<strong class="error">{{ iter }}</strong>
 				{% endfor %}

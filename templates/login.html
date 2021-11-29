@@ -24,11 +24,10 @@
 
 {% block content %}
 	<div class="container">
-		{{ super() }}
 		{% if form.errors %}
 			<ul style="padding-left:3em;" class="alert alert-danger">
 				{% for field, errors in form.errors.items() %}
-					<li>{{field}} {% for error in errors %}{{ error }}{% endfor %}</li>
+					<li>{% for error in errors %}{{ error }}{% endfor %}</li>
 				{% endfor %}
 			</ul>
 		{% endif %}
@@ -43,7 +42,8 @@
 						{{ form.username( class_="form-control" ) }}<br>
             {{ form.password.label( class_="form-control-label" ) }}
 						{{ form.password( class_="form-control" ) }}<br>
-						<input class="btn btn-primary" type="submit" value="Send">
+						{{ form.submit( class_="btn btn-primary", style="float:left;" ) }}
+						<a class="btn btn-secondary" href="/" style="float:right;">Go back</a>
 					</form>
 				</div>
 			</div>

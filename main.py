@@ -3,7 +3,7 @@ from flask_simplelogin import SimpleLogin, login_required, is_logged_in
 from flask_wtf import FlaskForm as FF
 from flask_bootstrap import Bootstrap
 from wtforms import StringField, SubmitField, TextAreaField, PasswordField
-from wtforms.validators import URL, Optional, Length, InputRequired, Email, EqualTo
+from wtforms.validators import URL, Optional, Length, InputRequired, Email, EqualTo, ValidationError
 from flask_compress import Compress
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -18,17 +18,6 @@ app = Flask( __name__ )
 # initiate gnupg active directory
 gpg = gnupg.GPG(gnupghome=os.environ['gnupg_home-dir'])
 gpg.encoding = 'utf-8'
-
-# user checker for SimpleLogin
-def check_user( user ):
-	global globalUser
-	globalUser = user.get('username')
-	pswd = user.get('password')
-	try:
-		hash = checkUser(globalUser)['password']
-	except TypeError:
-		return False
-	return True if crh(pswd, globalUser) == hash else False
 
 # redirect key checker
 def check_key( ckey:str ):
@@ -61,10 +50,28 @@ class reg(FF):
 	confirm = PasswordField("Confirm Password:", validators=[InputRequired()])
 	submit = SubmitField("Submit")
 
+# login form
 class login(FF):
 	username = StringField("Username", validators=[InputRequired()])
 	password = PasswordField("Password", validators=[InputRequired()])
 	submit = SubmitField("Submit")
+
+	def validate_username(form, field):
+		user = field.data
+		db_data = checkUser(user)
+		if (db_data is None):
+			raise ValidationError("Invalid credentials")
+
+# credential checker
+def check_user( user ):
+	global globalUser
+	globalUser = user.get('username')
+	pswd = quote(user.get('password'), safe='')
+	try:
+		hash = checkUser(globalUser)['password']
+	except TypeError:
+		return False
+	return True if crh(pswd, globalUser) == hash else False
 
 # local environment configurations
 app.config[ 'SECRET_KEY' ] = r(4096)
@@ -95,7 +102,7 @@ def redr( key ):
 # SimpleLogin messages
 messages = {
 	'login_success': 'login success!',
-	'login_failure': 'invalid credentials',
+	'login_failure': 'Invalid credentials',
 	'is_logged_in': 'already logged in',
 	'logout': 'logged out!',
 	'login_required': 'You need to log in first',
@@ -103,7 +110,7 @@ messages = {
 	'auth_error': 'Authentication Error: {0}'
 }
 # SimpleLogin
-SimpleLogin( app = app, login_checker = check_user, login_form=login, messages=messages )
+SimpleLogin( app = app, login_checker=check_user, login_form=login, messages=messages )
 # flask compression
 Compress().init_app(app)
 # bootstrap
