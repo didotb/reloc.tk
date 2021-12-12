@@ -56,16 +56,19 @@ class login(FF):
 	password = PasswordField("Password", validators=[InputRequired()])
 	submit = SubmitField("Submit")
 
-	def validate_username(form, field):
+	'''def validate_username(form, field):
 		user = field.data.lower()
 		db_data = checkUser(user)
 		if (db_data is None):
-			raise ValidationError("Invalid credentials")
+			raise ValidationError("Invalid credentials")'''
 
 # credential checker
 def check_user( user ):
 	global globalUser
 	globalUser = user.get('username').lower()
+	userData = checkUser(globalUser)
+	if userData is None:
+		return False
 	pswd = quote(user.get('password'), safe='')
 	try:
 		hash = checkUser(globalUser)['password']
@@ -99,18 +102,8 @@ def redr( key ):
 ##
 ## Init modules the main redir doesn't need ##
 ##
-# SimpleLogin messages
-messages = {
-	'login_success': 'login success!',
-	'login_failure': 'Invalid credentials',
-	'is_logged_in': 'already logged in',
-	'logout': 'logged out!',
-	'login_required': 'You need to log in first',
-	'access_denied': 'Access Denied',
-	'auth_error': 'Authentication Error: {0}'
-}
 # SimpleLogin
-SimpleLogin( app = app, login_checker=check_user, login_form=login, messages=messages )
+SimpleLogin( app=app, login_checker=check_user, login_form=login )
 # flask compression
 Compress().init_app(app)
 # bootstrap
@@ -131,7 +124,7 @@ def home():
 		return render_template( 'home.html' )
 
 # redirect url maker homepage
-@app.route( app.config[ 'SIMPLELOGIN_HOME_URL' ], methods=['GET','POST'] )
+@app.route( app.config['SIMPLELOGIN_HOME_URL'], methods=['GET','POST'] )
 @login_required
 def urls():
 	if is_logged_in():
@@ -165,7 +158,7 @@ def urls():
 		else:
 			formmsg = form.full_url.errors + form.custom_key.errors
 		return render_template( 'urls.html', msg=msg, url=url_tmpl, form=form, user=globalUser, formmsg=formmsg, err=errtype, stop=app.config['KILL_SIGNAL'] )
-	return redirect( location = app.config[ 'SIMPLELOGIN_LOGIN_URL' ] )
+	return redirect( location = app.config['SIMPLELOGIN_LOGIN_URL'] )
 
 # user register
 @app.route( '/register/', methods=['POST', 'GET'] )
@@ -180,7 +173,7 @@ def register():
 		if pswd == cnfrm:
 			hash = crh(pswd,usr)
 			if regUser(usr,hash):
-				return redirect(location=app.config[ 'SIMPLELOGIN_LOGIN_URL' ])
+				return redirect(location=app.config['SIMPLELOGIN_HOME_URL'])
 	return render_template("register.html", form=form)
 
 # personal pgp public key
