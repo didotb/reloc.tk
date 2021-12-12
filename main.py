@@ -57,7 +57,7 @@ class login(FF):
 	submit = SubmitField("Submit")
 
 	def validate_username(form, field):
-		user = field.data
+		user = field.data.lower()
 		db_data = checkUser(user)
 		if (db_data is None):
 			raise ValidationError("Invalid credentials")
@@ -65,7 +65,7 @@ class login(FF):
 # credential checker
 def check_user( user ):
 	global globalUser
-	globalUser = user.get('username')
+	globalUser = user.get('username').lower()
 	pswd = quote(user.get('password'), safe='')
 	try:
 		hash = checkUser(globalUser)['password']
@@ -172,7 +172,7 @@ def urls():
 def register():
 	form = reg()
 	if request.method == 'POST':
-		usr = quote(form.username.data, safe='')
+		usr = quote(form.username.data.lower(), safe='')
 		pswd = quote(form.password.data, safe='')
 		cnfrm = quote(form.confirm.data, safe='')
 		if checkUser(usr) is not None:
