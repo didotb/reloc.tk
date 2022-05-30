@@ -26,7 +26,16 @@
 				<h1>Add URL Records</h1>
 				{{ wtf.quick_form(form) }}
 				<br />
-				<strong class={{ err }}> {{ msg }} <a href="https://{{ url }}" target="_blank">{{ url }}</a> </strong>
+				<strong class={{ err }}> {{ msg }} <a href="{{ url }}" target="_blank">{{ url }}</a> </strong>
+				<br />
+				{% if err == 'success' %}
+				<div class="dropdown show">
+					<a class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#" id="showqr" style="padding-top: 0.5em">QR code</a>
+					<div class="dropdown-menu" aria-labelledby="showqr">
+						<img src="{{ qrcode(url, border=2) }}" class="dropdown-item" style="padding: 0; margin: 0"></img>
+					</div>
+				</div>
+				{% endif %}
 				{% for iter in formmsg %}
 				<strong class="error">{{ iter }}</strong>
 				{% endfor %}

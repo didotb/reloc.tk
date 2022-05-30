@@ -23,6 +23,10 @@ def query(key:str):
 	content = keys.find_one({"key": key})
 	return content if content else None
 
+def listAll(usr:str):
+	content = keys.find({"user": usr})
+	return content if content else None
+
 ##
 ## USERS ##
 ##
