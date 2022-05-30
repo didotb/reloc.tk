@@ -18,6 +18,8 @@ This [URL Shortener](https://reloc.tk) was made in order to make my life easier 
 ## Hosting status
 ~~I might consider opening this up in public with signups if I get the resources. But for now, since this is being hosted in [Replit](https://replit.com/@ddotb/reloctk) for free, resource is limited.~~
 
+**Thank you to [Clever Cloud](https://www.clever-cloud.com/ "Clever Cloud website") for the Mongo DB hosting.**
+
 Since I have found a tiny free MongoDB hosting service,
 shortener is now available for everyone to use.
 **PLEASE NOTE** however that the registration and the login pages
